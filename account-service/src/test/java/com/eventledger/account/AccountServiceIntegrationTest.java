@@ -18,8 +18,6 @@ import java.util.UUID;
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -62,9 +60,9 @@ class AccountServiceIntegrationTest {
     void getBalance_correctlyComputesCreditMinusDebit() throws Exception {
         String accountId = "acct-balance-" + UUID.randomUUID();
 
-        post(accountId, creditRequest("evt-c1", new BigDecimal("500.00"), "USD"));
-        post(accountId, debitRequest("evt-d1", new BigDecimal("200.00"), "USD"));
-        post(accountId, creditRequest("evt-c2", new BigDecimal("50.00"), "USD"));
+        postTransaction(accountId, creditRequest("evt-c1", new BigDecimal("500.00"), "USD"));
+        postTransaction(accountId, debitRequest("evt-d1", new BigDecimal("200.00"), "USD"));
+        postTransaction(accountId, creditRequest("evt-c2", new BigDecimal("50.00"), "USD"));
 
         mockMvc.perform(get("/accounts/{id}/balance", accountId))
                 .andExpect(status().isOk())
@@ -81,8 +79,8 @@ class AccountServiceIntegrationTest {
         Instant now = Instant.now();
 
         // Insert a later timestamp first, then earlier ones
-        post(accountId, creditRequestAt("evt-late", new BigDecimal("300.00"), "USD", now));
-        post(accountId, debitRequestAt("evt-early", new BigDecimal("100.00"), "USD", now.minusSeconds(60)));
+        postTransaction(accountId, creditRequestAt("evt-late", new BigDecimal("300.00"), "USD", now));
+        postTransaction(accountId, debitRequestAt("evt-early", new BigDecimal("100.00"), "USD", now.minusSeconds(60)));
 
         // Balance must always be 300 - 100 = 200 regardless of insert order
         mockMvc.perform(get("/accounts/{id}/balance", accountId))
@@ -98,9 +96,9 @@ class AccountServiceIntegrationTest {
         String accountId = "acct-sort-" + UUID.randomUUID();
         Instant base = Instant.parse("2024-01-01T00:00:00Z");
 
-        post(accountId, creditRequestAt("evt-T3", new BigDecimal("30.00"), "USD", base.plusSeconds(200)));
-        post(accountId, creditRequestAt("evt-T1", new BigDecimal("10.00"), "USD", base));
-        post(accountId, creditRequestAt("evt-T2", new BigDecimal("20.00"), "USD", base.plusSeconds(100)));
+        postTransaction(accountId, creditRequestAt("evt-T3", new BigDecimal("30.00"), "USD", base.plusSeconds(200)));
+        postTransaction(accountId, creditRequestAt("evt-T1", new BigDecimal("10.00"), "USD", base));
+        postTransaction(accountId, creditRequestAt("evt-T2", new BigDecimal("20.00"), "USD", base.plusSeconds(100)));
 
         mockMvc.perform(get("/accounts/{id}", accountId))
                 .andExpect(status().isOk())
@@ -125,7 +123,7 @@ class AccountServiceIntegrationTest {
     // Helpers
     // -------------------------------------------------------------------------
 
-    private void post(String accountId, TransactionRequestDto req) throws Exception {
+    private void postTransaction(String accountId, TransactionRequestDto req) throws Exception {
         mockMvc.perform(post("/accounts/{id}/transactions", accountId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
