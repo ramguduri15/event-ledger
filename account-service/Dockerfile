@@ -1,8 +1,8 @@
-FROM openjdk:21-slim AS builder
+FROM eclipse-temurin:21-jdk-jammy AS builder
 WORKDIR /build
 COPY target/account-service-*.jar app.jar
 
-FROM openjdk:21-slim
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 COPY --from=builder /build/app.jar app.jar
 EXPOSE 8081
