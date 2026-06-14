@@ -54,7 +54,7 @@ Java 21, Spring Boot 3, Resilience4j, and structured JSON logging.
 
 | Tool | Minimum version |
 |---|---|
-| Java | 21 |
+| Java | 21 (tested with Eclipse Temurin 21) |
 | Maven | 3.9+ |
 | Docker + Docker Compose | 24+ |
 
@@ -63,17 +63,21 @@ Java 21, Spring Boot 3, Resilience4j, and structured JSON logging.
 ## Quick Start with Docker Compose
 
 > **Build first** — the Dockerfiles copy the fat JARs produced by Maven.
+> If you are already running the services manually (`mvn spring-boot:run`), stop them first — Docker needs ports 8080 and 8081 to be free.
 
 ```bash
 # 1. Build both services
 mvn clean package -DskipTests
 
-# 2. Start the stack
+# 2. Build images and start the stack
 docker compose up --build
 
 # account-service starts on :8081
 # event-gateway starts on :8080 (waits until account-service health check passes)
 ```
+
+> **Note:** Docker images use `eclipse-temurin:21-jre-jammy` (the official Java 21 image).
+> The legacy `openjdk:21-slim` image was deprecated and removed from Docker Hub.
 
 Verify the stack is up:
 
