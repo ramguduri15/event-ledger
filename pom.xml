@@ -97,6 +97,14 @@
                     <configuration>
                         <source>${java.version}</source>
                         <target>${java.version}</target>
+                        <!--
+                            Required by Spring Boot 3: enables reflection-based resolution of
+                            @PathVariable, @RequestParam, and @RequestHeader names without
+                            requiring explicit name attributes on each annotation.
+                        -->
+                        <compilerArgs>
+                            <arg>-parameters</arg>
+                        </compilerArgs>
                         <annotationProcessorPaths>
                             <path>
                                 <groupId>org.projectlombok</groupId>

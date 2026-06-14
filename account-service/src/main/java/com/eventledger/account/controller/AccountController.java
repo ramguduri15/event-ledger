@@ -25,18 +25,18 @@ public class AccountController {
     @PostMapping("/accounts/{accountId}/transactions")
     @ResponseStatus(HttpStatus.CREATED)
     public TransactionResponseDto recordTransaction(
-            @PathVariable String accountId,
+            @PathVariable("accountId") String accountId,
             @Valid @RequestBody TransactionRequestDto request) {
         return accountService.recordTransaction(accountId, request);
     }
 
     @GetMapping("/accounts/{accountId}/balance")
-    public BalanceResponseDto getBalance(@PathVariable String accountId) {
+    public BalanceResponseDto getBalance(@PathVariable("accountId") String accountId) {
         return accountService.getBalance(accountId);
     }
 
     @GetMapping("/accounts/{accountId}")
-    public AccountDetailDto getAccountDetail(@PathVariable String accountId) {
+    public AccountDetailDto getAccountDetail(@PathVariable("accountId") String accountId) {
         return accountService.getAccountDetail(accountId);
     }
 
