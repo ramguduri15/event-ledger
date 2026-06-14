@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <springProperty scope="context" name="springAppName" source="spring.application.name"
+                    defaultValue="event-gateway"/>
+
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>{"timestamp":"%d{yyyy-MM-dd'T'HH:mm:ss.SSS'Z',UTC}","level":"%level","service":"${springAppName}","traceId":"%X{traceId:-none}","logger":"%logger{36}","message":"%replace(%msg){'\"','\\\"'}"}%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="JSON_CONSOLE"/>
+    </root>
+
+    <logger name="org.hibernate" level="WARN"/>
+    <logger name="com.h2database" level="WARN"/>
+    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="io.github.resilience4j" level="INFO"/>
+
+</configuration>
