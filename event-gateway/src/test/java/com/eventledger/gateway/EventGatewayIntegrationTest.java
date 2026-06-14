@@ -5,6 +5,7 @@ import com.eventledger.gateway.entity.EventRecord;
 import com.eventledger.gateway.repository.EventRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,8 +28,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -169,10 +168,9 @@ class EventGatewayIntegrationTest {
     void postEvent_accountServiceRepeatedFailures_circuitBreakerOpens_returns503() throws Exception {
         wireMockServer.resetAll();
         wireMockServer.stubFor(
-                post(urlMatching("/accounts/.*/transactions"))
+                WireMock.post(urlMatching("/accounts/.*/transactions"))
                         .willReturn(aResponse().withStatus(500).withBody("{\"error\":\"SERVER_ERROR\"}")));
 
-        // Fire enough requests to exceed the 50% failure threshold (sliding window = 5)
         for (int i = 0; i < 5; i++) {
             EventRequestDto req = buildRequest("evt-cb-" + i + "-" + UUID.randomUUID(), "acct-cb");
             mockMvc.perform(post("/events")
@@ -240,7 +238,7 @@ class EventGatewayIntegrationTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
 
-        verify(postRequestedFor(urlMatching("/accounts/.*/transactions"))
+        wireMockServer.verify(postRequestedFor(urlMatching("/accounts/.*/transactions"))
                 .withHeader("X-Trace-Id", containing(traceId)));
     }
 
@@ -275,7 +273,7 @@ class EventGatewayIntegrationTest {
 
     private void stubAccountServiceSuccess() {
         wireMockServer.stubFor(
-                post(urlMatching("/accounts/.*/transactions"))
+                WireMock.post(urlMatching("/accounts/.*/transactions"))
                         .willReturn(aResponse()
                                 .withStatus(201)
                                 .withHeader("Content-Type", "application/json")
